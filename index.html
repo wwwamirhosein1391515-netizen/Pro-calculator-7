@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amirhosein & Abolfazl Professional Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Vazirmatn', 'Tahoma', 'Segoe UI', 'sans-serif'],
+                        mono: ['Tahoma', 'sans-serif'],
+                        cursive: ['Brush Script MT', 'cursive'],
+                    },
+                    colors: {
+                        glass: {
+                            100: 'rgba(255, 255, 255, 0.1)',
+                            200: 'rgba(255, 255, 255, 0.2)',
+                            300: 'rgba(255, 255, 255, 0.3)',
+                            border: 'rgba(255, 255, 255, 0.4)',
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'blob': 'blob 7s infinite',
+                        'fade-in-up': 'fadeInUp 1s ease-out forwards',
+                        'aurora': 'aurora 20s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        aurora: {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                            '100%': { backgroundPosition: '0% 50%' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --mouse-x: 0px;
+            --mouse-y: 0px;
+            --card-rotate-x: 0deg;
+            --card-rotate-y: 0deg;
+        }
+
+        body {
+            /* Updated Background: Premium Earthy & Silver Tones with Aurora Effect */
+            background: radial-gradient(circle at 15% 50%, #E6D0B3, transparent 25%), 
+                        radial-gradient(circle at 85% 30%, #C0C0C0, transparent 25%), 
+                        linear-gradient(125deg, #2b1b17, #5D4037, #8D6E63, #B0BEC5, #ECEFF1, #4E342E);
+            background-size: 300% 300%;
+            animation: aurora 20s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+            perspective: 1500px; /* Essential for 3D Tilt */
+        }
+
+        /* DARK MODE STYLES */
+        body.dark-mode {
+            background: radial-gradient(circle at 15% 50%, #3E2723, transparent 25%), 
+                        radial-gradient(circle at 85% 30%, #263238, transparent 25%), 
+                        linear-gradient(125deg, #000000, #1a1a1a, #37474F, #4E342E, #212121);
+            background-size: 300% 300%;
+            color: #e2e8f0;
+        }
+
+        /* --- SPATIAL GLASS PANEL (CRYSTAL MATERIAL) --- */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            /* Crystal Border Effect */
+            border-top: 1px solid rgba(255, 255, 255, 0.6);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.25), 
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        /* --- 3D TILT CONTAINER --- */
+        #main-tilt-wrapper {
+            transition: transform 0.1s ease-out; /* Smooth follow */
+            transform-style: preserve-3d;
+            transform: rotateX(var(--card-rotate-x)) rotateY(var(--card-rotate-y));
+        }
+
+        /* --- DYNAMIC GLOW BUTTONS --- */
+        /* This container captures mouse for glow */
+        .glow-grid {
+            position: relative;
+        }
+        
+        .btn-bubble {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            position: relative;
+            overflow: hidden;
+            font-family: 'Tahoma', 'Vazirmatn', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), background 0.3s;
+            z-index: 10;
+            color: #333;
+        }
+
+        /* The Moving Glow Effect */
+        .btn-bubble::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(
+                120px circle at var(--mouse-x) var(--mouse-y), 
+                rgba(255, 255, 255, 0.5),
+                transparent 40%
+            );
+            z-index: 1;
+            opacity: 0; /* Hidden by default, shown by JS logic or hover */
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        /* Show glow when parent grid is hovered (handled by JS coordinates) */
+        .glow-grid:hover .btn-bubble::before {
+            opacity: 1;
+        }
+
+        .btn-bubble:hover {
+            transform: translateY(-4px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 20; /* Pop out */
+        }
+        
+        .btn-bubble:active {
+            transform: scale(0.95);
+        }
+
+        /* Button Colors with transparency for Holographic feel */
+        .btn-op { background: rgba(190, 190, 190, 0.15); color: #333; } 
+        .btn-eq { background: rgba(255, 255, 255, 0.25); color: #000; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 0 25px rgba(255,255,255,0.4); }
+        .btn-ac { background: rgba(150, 50, 50, 0.15); color: #881337; }
+        .btn-func { background: rgba(100, 100, 100, 0.1); color: #4b5563; }
+
+        /* Dark mode tweaks for buttons */
+        body.dark-mode .btn-bubble {
+            background: rgba(30, 41, 59, 0.4);
+            border-color: rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+        }
+        body.dark-mode .btn-bubble::before {
+            background: radial-gradient(
+                120px circle at var(--mouse-x) var(--mouse-y), 
+                rgba(255, 255, 255, 0.15),
+                transparent 40%
+            );
+        }
+        body.dark-mode .btn-op { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        body.dark-mode .btn-eq { background: rgba(16, 185, 129, 0.15); color: #34d399; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+        body.dark-mode .btn-ac { background: rgba(244, 63, 94, 0.15); color: #fda4af; }
+        body.dark-mode .btn-func { background: rgba(99, 102, 241, 0.1); color: #a5b4fc; }
+
+        .glass-input {
+            background: rgba(230, 230, 230, 0.1); /* More transparent */
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+            color: #1f2937;
+            transition: all 0.3s;
+            font-family: 'Tahoma', sans-serif;
+        }
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: #fff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            outline: none;
+        }
+        body.dark-mode .glass-input {
+            background: rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+        }
+        
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        .nav-pill {
+            position: relative;
+            z-index: 10;
+        }
+        .nav-pill.active {
+            background: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            color: #111;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+        }
+        body.dark-mode .nav-pill.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        /* --- FLOATING 3D ELEMENTS --- */
+        .glass-menu-btn {
+            /* Existing styles + z-index fix */
+            position: fixed; top: 20px; left: 20px; width: 50px; height: 50px;
+            border-radius: 50%; background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.4);
+            display: flex; justify-content: center; alignItems: center; flexDirection: column; gap: 4px;
+            cursor: pointer; z-index: 100; transition: all 0.3s ease;
+        }
+        .glass-menu-btn:hover { transform: scale(1.1) rotate(90deg); background: rgba(255, 255, 255, 0.4); }
+        .dot { width: 4px; height: 4px; background-color: #333; border-radius: 50%; }
+        body.dark-mode .dot { background-color: #fff; }
+
+        .menu-dropdown {
+            /* Spatial Menu */
+            position: fixed; top: 80px; left: 20px; width: 240px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px; padding: 10px;
+            display: flex; flexDirection: column; gap: 5px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            opacity: 0; visibility: hidden; transform: translateY(-20px) translateX(-20px) skewY(5deg);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 99;
+        }
+        body.dark-mode .menu-dropdown { background: rgba(20, 20, 30, 0.8); border-color: rgba(255,255,255,0.1); }
+        .menu-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0) translateX(0) skewY(0); }
+        
+        .menu-item { padding: 12px 15px; border-radius: 12px; cursor: pointer; color: #333; font-weight: 600; transition: 0.2s; display: flex; alignItems: center; gap: 10px; }
+        .menu-item:hover { background: rgba(255, 255, 255, 0.5); transform: translateX(5px); }
+        body.dark-mode .menu-item { color: #e2e8f0; }
+        body.dark-mode .menu-item:hover { background: rgba(255, 255, 255, 0.1); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.2); backdrop-filter: blur(8px);
+            z-index: 200; display: flex; justify-content: center; alignItems: center;
+            opacity: 0; visibility: hidden; transition: all 0.4s;
+        }
+        .modal-overlay.open { opacity: 1; visibility: visible; }
+        .modal-content {
+            width: 90%; max-width: 400px; min-height: 400px; max-height: 80vh; overflow-y: auto;
+            transform: scale(0.8) rotateX(20deg); opacity: 0;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        .modal-overlay.open .modal-content { transform: scale(1) rotateX(0deg); opacity: 1; }
+
+        /* Toast */
+        #toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #333; padding: 12px 24px; border-radius: 30px;
+            z-index: 300; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            font-weight: bold;
+        }
+        body.dark-mode #toast { color: white; background: rgba(0,0,0,0.6); }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* Login & Intro */
+        #login-overlay, #intro-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #E6D0B3, #C0C0C0); /* Matching body */
+            z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 1s ease;
+        }
+        
+        /* Credits Section in Settings */
+        .credits-box {
+            border-top: 1px solid rgba(100,100,100,0.1);
+            margin-top: 20px;
+            padding-top: 20px;
+            text-align: center;
+        }
+        .credit-role { font-size: 0.7rem; opacity: 0.7; margin-bottom: 2px; }
+        .credit-name { font-size: 0.95rem; font-weight: 800; color: #8D6E63; margin-bottom: 12px; }
+        body.dark-mode .credit-name { color: #D7CCC8; }
+
+        /* User Badge */
+        #user-name-badge {
+            position: absolute; top: 15px; right: 20px;
+            font-size: 0.85rem; font-weight: 700; color: #5D4037;
+            padding: 8px 16px; border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px); z-index: 50;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        body.dark-mode #user-name-badge { color: #e2e8f0; background: rgba(255, 255, 255, 0.05); }
+
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .result-item { flex-direction: column; align-items: center; padding: 0.5rem; border-radius: 1rem; background: rgba(255, 255, 255, 0.1); display: flex; border: 1px solid rgba(255,255,255,0.2); }
+        
+        /* Intro Text */
+        .intro-text-style { opacity: 0; transform: translateY(30px); transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1); }
+    </style>
+</head>
+<body class="selection:bg-amber-200 selection:text-amber-900 transition-colors duration-500">
+
+    <div id="login-overlay">
+        <div class="glass-panel p-8 rounded-[2rem] flex flex-col gap-5 w-80 text-center border border-white/60 shadow-2xl relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-tr from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+            <h2 class="text-2xl font-bold font-sans mb-2 text-gray-800">خوش آمدید</h2>
+            <div class="flex flex-col gap-3">
+                <input type="text" id="login-fname" class="glass-input w-full h-12 rounded-xl text-center text-lg placeholder-gray-600 !text-black !bg-white/40" placeholder="نام">
+                <input type="text" id="login-lname" class="glass-input w-full h-12 rounded-xl text-center text-lg placeholder-gray-600 !text-black !bg-white/40" placeholder="نام خانوادگی">
+            </div>
+            <button onclick="submitLogin()" class="btn-bubble w-full h-12 rounded-xl text-black font-bold text-lg mt-2 shadow-lg hover:bg-white/70 transition-all">ورود</button>
+        </div>
+    </div>
+
+    <div id="intro-overlay" style="display:none; opacity:0;">
+        <div id="intro-special-msg" class="intro-text-style hidden text-xl font-bold mb-4 text-center px-4"></div>
+        <div id="intro-hello" class="intro-text-style text-6xl font-black text-gray-800 mb-2">Hello</div>
+        <div id="intro-sub" class="intro-text-style text-xl text-gray-600">Amirhosein And Abolfazl pro calculator</div>
+    </div>
+
+    <div id="toast">متن پیام</div>
+
+    <div id="main-app-container" class="app-container w-full h-full flex flex-col items-center justify-center relative perspective-container">
+        
+        <div id="user-name-badge" class="hidden"></div>
+
+        <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+            <div class="absolute top-10 left-10 w-96 h-96 bg-amber-200/40 rounded-full mix-blend-overlay filter blur-[80px] animate-blob dark:bg-slate-700/40"></div>
+            <div class="absolute top-1/2 right-10 w-80 h-80 bg-slate-300/40 rounded-full mix-blend-overlay filter blur-[80px] animate-blob animation-delay-2000 dark:bg-indigo-900/40"></div>
+            <div class="absolute -bottom-32 left-1/3 w-96 h-96 bg-orange-100/40 rounded-full mix-blend-overlay filter blur-[80px] animate-blob animation-delay-4000 dark:bg-slate-800/40"></div>
+        </div>
+
+        <div class="glass-menu-btn" onclick="toggleMenu()">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+
+        <div id="main-menu" class="menu-dropdown">
+            <div class="menu-item" onclick="openSettings()">⚙️ تنظیمات</div>
+            <div class="menu-item" onclick="openHistory()">📜 تاریخچه</div>
+            <div class="menu-item" onclick="openConverter()">🔄 تبدیل واحد</div>
+            <div class="menu-item" onclick="openCurrency()">💱 تبدیل ارز</div>
+            <div class="menu-item" onclick="openDiscount()">🏷️ محاسبه تخفیف</div>
+            <div class="menu-item" onclick="openBMI()">💪 شاخص توده بدنی</div>
+            <div class="menu-item" onclick="openPower()">⚡ توان</div>
+            <div class="menu-item" onclick="openAgeCalc()">📅 محاسبه سن دقیق</div>
+        </div>
+
+        <div id="settings-modal" class="modal-overlay">
+            <div class="modal-content glass-panel rounded-[2rem] p-6 flex flex-col relative">
+                <button onclick="closeModal('settings-modal')" class="absolute top-4 left-4 text-gray-600 hover:text-red-500 font-bold text-xl transition-colors dark:text-gray-300">✕</button>
+                <h2 class="text-xl font-bold text-center mb-6 text-gray-800 dark:text-white">تنظیمات</h2>
+                
+                <div id="settings-content-wrapper" class="flex flex-col gap-6">
+                    <div class="glass-panel rounded-xl p-4 flex flex-col items-center gap-2">
+                        <div class="w-16 h-16 rounded-full bg-white/30 flex items-center justify-center text-3xl shadow-inner border border-white/50">👤</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">کاربر فعلی</div>
+                        <div id="settings-user-name" class="text-lg font-bold text-gray-800 dark:text-white">---</div>
+                    </div>
+
+                    <div class="glass-panel rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-white/20 transition-all border border-white/30" onclick="toggleTheme()">
+                        <span class="text-gray-700 dark:text-gray-200 font-semibold">حالت شب (Dark Mode)</span>
+                        <div class="relative w-12 h-6 rounded-full bg-gray-400 dark:bg-green-500 transition-colors shadow-inner">
+                            <div class="absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform transform dark:translate-x-6 shadow-md"></div>
+                        </div>
+                    </div>
+
+                    <div class="credits-box">
+                        <div class="credit-role">تهیه کننده و کد نویس</div>
+                        <div class="credit-name">امیر حسین نادری</div>
+                        
+                        <div class="credit-role mt-3">دستیار کد نویس و اسپانسر</div>
+                        <div class="credit-name">ابوالفضل حضرتی زاده</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="history-modal" class="modal-overlay">
+            <div class="modal-content glass-panel rounded-[2rem] p-6 flex flex-col relative">
+                <button onclick="closeModal('history-modal')" class="absolute top-4 left-4 text-gray-600 hover:text-red-500 font-bold text-xl transition-colors dark:text-gray-300">✕</button>
+                <h2 class="text-xl font-bold text-center mb-4 text-gray-800 dark:text-white">تاریخچه محاسبات</h2>
+                <div id="history-list" class="flex flex-col gap-2 overflow-y-auto max-h-[60vh] pr-1">
+                    <div class="text-center text-gray-500 py-4">هنوز محاسبه‌ای انجام نشده</div>
+                </div>
+                <button onclick="clearHistory()" class="btn-bubble mt-4 py-2 rounded-xl text-red-700 text-sm font-semibold">پاک کردن تاریخچه</button>
+            </div>
+        </div>
+
+        <div id="converter-modal" class="modal-overlay">
+             <div class="modal-content glass-panel rounded-[2rem] p-6 flex flex-col relative">
+                <button onclick="closeModal('converter-modal')" class="absolute top-4 left-4 text-gray-600 hover:text-red-500 font-bold text-xl">✕</button>
+                <h2 class="text-xl font-bold text-center mb-4 text-gray-800 dark:text-white">تبدیل واحد</h2>
+                <div class="flex flex-col gap-4">
+                    <select id="conv-type" onchange="updateConvOptions()" class="glass-input w-full h-10 rounded-xl text-center"><option value="length">طول</option><option value="mass">وزن</option><option value="temp">دما</option></select>
+                    <input type="number" id="conv-input" oninput="convertUnits()" class="glass-input w-full h-12 rounded-xl text-center text-lg font-mono" placeholder="0">
+                    <div class="flex gap-2 items-center"><select id="conv-from" onchange="convertUnits()" class="glass-input flex-1 h-12 rounded-xl text-center"></select><span>به</span><select id="conv-to" onchange="convertUnits()" class="glass-input flex-1 h-12 rounded-xl text-center"></select></div>
+                    <div class="glass-panel rounded-xl p-4 text-center"><div id="conv-result" class="text-2xl font-mono font-bold text-gray-800 dark:text-white">0</div></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="currency-modal" class="modal-overlay">
+             <div class="modal-content glass-panel rounded-[2rem] p-6 flex flex-col relative">
+                <button onclick="closeModal('currency-modal')" class="absolute top-4 left-4 text-gray-600 hover:text-red-500 font-bold text-xl">✕</button>
+                <h2 class="text-xl font-bold text-center mb-4 text-gray-800 dark:text-white">تبدیل ارز</h2>
+                <div class="flex flex-col gap-4">
+                     <label class="text-sm dark:text-gray-300">قیمت ۱ دلار (تومان):</label>
+                     <input type="number" id="curr-rate" class="glass-input w-full h-10 rounded-xl text-center font-mono" value="70000" oninput="calcCurrency()">
+                     <div class="glass-panel p-1.5 rounded-full flex gap-1"><button onclick="setCurrMode('usd-to-irr')" id="btn-usd-irr" class="flex-1 py-2 rounded-full text-xs font-semibold bg-white/50 text-gray-900 shadow-sm">دلار به تومان</button><button onclick="setCurrMode('irr-to-usd')" id="btn-irr-usd" class="flex-1 py-2 rounded-full text-xs font-semibold text-gray-600 dark:text-gray-300">تومان به دلار</button></div>
+                     <input type="number" id="curr-input" oninput="calcCurrency()" class="glass-input w-full h-12 rounded-xl text-center text-lg font-mono" placeholder="0">
+                     <div class="glass-panel rounded-xl p-4 text-center"><div id="curr-result" class="text-2xl font-mono font-bold text-gray-800 dark:text-white">0</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="discount-modal" class="modal-overlay">
+            <div class="modal-content glass-panel rounded-[2rem] p-6 flex flex-col relative">
+                <button onclick="closeModal('discount-modal')" class="absolute top-4 left-4 text-gray-600">✕</button>
+                <h2 class="text-xl font-bold text-center mb-4 dark:text-white">محاسبه تخفیف</h2>
+                <div class="flex flex-col gap-4">
+                    <input type="number" id="disc-price" class="glass-input w-full h-12 rounded-xl text-center font-mono" placeholder="قیمت اصلی">
+                    <input type="number" id="disc-percent" class="glass-input w-full h-12 rounded-xl text-center font-mono" placeholder="درصد تخفیف">
+                    <button onclick="calcDiscount()" class="btn-bubble btn-eq h-12 rounded-xl">محاسبه</button>
+                    <div id="disc-result" class="glass-panel rounded-xl p-4 mt-2 text-center dir-ltr text-gray-800 dark:text-white">---</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="bmi-modal" class="modal-overlay">
+            <div class="modal-content glass-panel rounded-[2rem] p-6 flex flex-col relative">
+                <button onclick="closeModal('bmi-modal')" class="absolute top-4 left-4 text-gray-600">✕</button>
+                <h2 class="text-xl font-bold text-center mb-4 dark:text-white">شاخص توده بدنی (BMI)</h2>
+                <div class="flex flex-col gap-4">
+                    <input type="number" id="bmi-height" class="glass-input w-full h-12 rounded-xl text-center font-mono" placeholder="قد (cm)">
+                    <input type="number" id="bmi-weight" class="glass-input w-full h-12 rounded-xl text-center font-mono" placeholder="وزن (kg)">
+                    <button onclick="calcBMI()" class="btn-bubble btn-eq h-12 rounded-xl">محاسبه</button>
+                    <div id="bmi-result" class="glass-panel rounded-xl p-4 mt-2 text-center text-gray-800 dark:text-white">---</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="power-modal" class="modal-overlay">
+            <div class="modal-content glass-panel rounded-[2rem] p-6 flex flex-col relative">
+                <button onclick="closeModal('power-modal')" class="absolute top-4 left-4 text-gray-600">✕</button>
+                <h2 class="text-xl font-bold text-center mb-4 dark:text-white">محاسبه توان</h2>
+                <div class="flex flex-col gap-2">
+                    <div class="flex gap-2"><input type="number" id="pow-base" class="glass-input w-full h-10 rounded-xl text-center font-mono" placeholder="پایه"><input type="number" id="pow-exp" class="glass-input w-full h-10 rounded-xl text-center font-mono" placeholder="توان"></div>
+                    <button onclick="calcPower()" class="btn-bubble btn-op h-10 rounded-xl">محاسبه</button>
+                    <div id="pow-result" class="text-center font-bold text-lg font-mono text-gray-800 dark:text-white mt-2">---</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="age-modal" class="modal-overlay">
+             <div class="modal-content glass-panel rounded-[2rem] p-6 flex flex-col relative">
+                <button onclick="closeModal('age-modal')" class="absolute top-4 left-4 text-gray-600">✕</button>
+                <h2 class="text-xl font-bold text-center mb-4 dark:text-white">محاسبه سن</h2>
+                <input type="date" id="age-input" class="glass-input w-full h-12 rounded-xl text-center font-mono mb-4">
+                <button onclick="calcAge()" class="btn-bubble btn-eq h-12 rounded-xl">محاسبه</button>
+                <div id="age-result" class="glass-panel rounded-xl p-4 mt-2 text-center dark:text-white">---</div>
+            </div>
+        </div>
+
+        <main id="main-tilt-wrapper" class="w-full max-w-md px-4 pb-10 mt-10">
+            
+            <header class="mb-6 transform transition-transform hover:scale-105">
+                <div class="glass-panel rounded-full px-8 py-3 text-center border border-white/40 shadow-xl bg-white/5">
+                    <h1 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 tracking-tight drop-shadow-sm">
+                        Amirhosein <span class="text-gray-500 dark:text-gray-400">&</span> Abolfazl
+                    </h1>
+                    <p class="text-[10px] text-gray-600 dark:text-gray-300 font-bold uppercase tracking-[0.2em] mt-1 opacity-80">Holographic Spatial UI</p>
+                </div>
+            </header>
+
+            <div class="glass-panel rounded-[3rem] p-6 relative overflow-visible min-h-[600px] flex flex-col transition-all duration-300 transform-style-3d">
+                
+                <div class="glass-panel rounded-full p-1.5 flex justify-between items-center mb-6 shadow-inner border border-white/20">
+                    <button onclick="switchTab('basic')" id="tab-basic" class="nav-pill active flex-1 py-2 rounded-full text-[10px] sm:text-xs font-semibold text-gray-600 transition-all duration-300">پایه</button>
+                    <button onclick="switchTab('fraction')" id="tab-fraction" class="nav-pill flex-1 py-2 rounded-full text-[10px] sm:text-xs font-semibold text-gray-600 transition-all duration-300">کسر</button>
+                    <button onclick="switchTab('equation')" id="tab-equation" class="nav-pill flex-1 py-2 rounded-full text-[10px] sm:text-xs font-semibold text-gray-600 transition-all duration-300">معادله</button>
+                    <button onclick="switchTab('number')" id="tab-number" class="nav-pill flex-1 py-2 rounded-full text-[10px] sm:text-xs font-semibold text-gray-600 transition-all duration-300">اعداد</button>
+                    <button onclick="switchTab('polygon')" id="tab-polygon" class="nav-pill flex-1 py-2 rounded-full text-[10px] sm:text-xs font-semibold text-gray-600 transition-all duration-300">چندضلعی</button>
+                    <button onclick="switchTab('sieve')" id="tab-sieve" class="nav-pill flex-1 py-2 rounded-full text-[10px] sm:text-xs font-semibold text-gray-600 transition-all duration-300">غربال</button>
+                </div>
+
+                <div id="app-content" class="flex-1 flex flex-col relative transition-opacity duration-300">
+                    </div>
+
+            </div>
+        </main>
+        </div>
+
+    <script>
+        // --- 3D TILT & GLOW LOGIC ---
+        const tiltWrapper = document.getElementById('main-tilt-wrapper');
+        const appContainer = document.getElementById('main-app-container');
+
+        // Mouse Move Event for Tilt & Glow
+        document.addEventListener('mousemove', (e) => {
+            // 1. Calculate Tilt
+            const x = (window.innerWidth / 2 - e.pageX) / 40; // Reduced sensitivity
+            const y = (window.innerHeight / 2 - e.pageY) / 40;
+            
+            // Limit tilt degrees
+            const clampX = Math.max(-10, Math.min(10, y)); 
+            const clampY = Math.max(-10, Math.min(10, -x)); 
+
+            document.documentElement.style.setProperty('--card-rotate-x', `${clampX}deg`);
+            document.documentElement.style.setProperty('--card-rotate-y', `${clampY}deg`);
+
+            // 2. Calculate Glow Position for all glow grids
+            document.querySelectorAll('.glow-grid').forEach(grid => {
+                const rect = grid.getBoundingClientRect();
+                const gridX = e.clientX - rect.left;
+                const gridY = e.clientY - rect.top;
+                grid.style.setProperty('--mouse-x', `${gridX}px`);
+                grid.style.setProperty('--mouse-y', `${gridY}px`);
+            });
+        });
+
+        // Reset Tilt on Leave (optional, keeps it floating if removed)
+        /* document.addEventListener('mouseleave', () => {
+             document.documentElement.style.setProperty('--card-rotate-x', '0deg');
+             document.documentElement.style.setProperty('--card-rotate-y', '0deg');
+        }); */
+
+        // --- EXISTING LOGIC ---
+        let currentTab = 'basic';
+        let displayVal = '0';
+        let calcHistory = [];
+        let isDarkMode = false;
+        let userData = { firstName: '', lastName: '' };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateConvOptions();
+            const savedFName = localStorage.getItem('ah_user_fname');
+            const savedLName = localStorage.getItem('ah_user_lname');
+            if (savedFName && savedLName) {
+                userData.firstName = savedFName;
+                userData.lastName = savedLName;
+                document.getElementById('login-overlay').style.display = 'none';
+                startIntroSequence();
+            }
+            renderBasic();
+        });
+
+        function submitLogin() {
+            const fName = document.getElementById('login-fname').value.trim();
+            const lName = document.getElementById('login-lname').value.trim();
+            if (!fName || !lName) { showToast('لطفاً نام و نام خانوادگی را وارد کنید'); return; }
+            localStorage.setItem('ah_user_fname', fName);
+            localStorage.setItem('ah_user_lname', lName);
+            userData.firstName = fName;
+            userData.lastName = lName;
+            const loginOverlay = document.getElementById('login-overlay');
+            loginOverlay.style.opacity = '0';
+            setTimeout(() => { loginOverlay.style.display = 'none'; startIntroSequence(); }, 1000);
+        }
+
+        function startIntroSequence() {
+            const overlay = document.getElementById('intro-overlay');
+            const helloText = document.getElementById('intro-hello');
+            const subText = document.getElementById('intro-sub');
+            const specialMsg = document.getElementById('intro-special-msg');
+            const userBadge = document.getElementById('user-name-badge');
+
+            overlay.style.display = 'flex';
+            setTimeout(() => { overlay.style.opacity = '1'; }, 100);
+
+            const specialTeachers = [{ f: 'حامد', l: 'مولایی' }, { f: 'حسین', l: 'بختیاری' }, { f: 'محمد', l: 'قاسمی' }, { f: 'مصطفی', l: 'شعبانی' }];
+            const foundTeacher = specialTeachers.find(t => t.f === userData.firstName.trim() && t.l === userData.lastName.trim());
+            userBadge.innerText = foundTeacher ? `استاد ${userData.lastName} عزیز` : `${userData.firstName} عزیز`;
+            userBadge.classList.remove('hidden');
+
+            const isAbolfazl = userData.firstName.includes('ابوالفضل') || userData.firstName.toLowerCase().includes('abolfazl');
+            const isHazrati = userData.lastName.includes('حضرتی') || userData.lastName.toLowerCase().includes('hazrati');
+
+            if (isAbolfazl && isHazrati) {
+                specialMsg.innerHTML = 'امیدوارم در مسابقات اول شیم ابوالفضل حضرتی عزیز ممنون که پا به پام تلاش کردی تا این رو به این درجه برسونیم';
+                specialMsg.classList.remove('hidden');
+                setTimeout(() => { specialMsg.style.opacity = '1'; specialMsg.style.transform = 'translateY(0)'; }, 300);
+                setTimeout(() => { helloText.style.opacity = '1'; helloText.style.transform = 'translateY(0)'; }, 2000);
+                setTimeout(() => { subText.style.opacity = '1'; subText.style.transform = 'translateY(0)'; }, 3000);
+                setTimeout(() => { overlay.style.opacity = '0'; setTimeout(() => { overlay.style.display = 'none'; }, 1200); }, 6000);
+            } else {
+                setTimeout(() => { helloText.style.opacity = '1'; helloText.style.transform = 'translateY(0)'; }, 300);
+                setTimeout(() => { subText.style.opacity = '1'; subText.style.transform = 'translateY(0)'; }, 1200);
+                setTimeout(() => { overlay.style.opacity = '0'; setTimeout(() => { overlay.style.display = 'none'; }, 1200); }, 3500);
+            }
+        }
+
+        function toggleMenu() { document.getElementById('main-menu').classList.toggle('show'); }
+        window.onclick = (e) => { if (!e.target.closest('.glass-menu-btn') && !e.target.closest('.menu-dropdown')) document.getElementById('main-menu').classList.remove('show'); };
+        function toggleTheme() { document.body.classList.toggle('dark-mode'); isDarkMode = !isDarkMode; }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        function openSettings() { document.getElementById('settings-user-name').innerText = `${userData.firstName} ${userData.lastName}`; document.getElementById('settings-modal').classList.add('open'); document.getElementById('main-menu').classList.remove('show'); }
+        function openHistory() { document.getElementById('history-modal').classList.add('open'); document.getElementById('main-menu').classList.remove('show'); renderHistoryList(); }
+        function openConverter() { document.getElementById('converter-modal').classList.add('open'); document.getElementById('main-menu').classList.remove('show'); }
+        function openCurrency() { document.getElementById('currency-modal').classList.add('open'); document.getElementById('main-menu').classList.remove('show'); }
+        function openDiscount() { document.getElementById('discount-modal').classList.add('open'); document.getElementById('main-menu').classList.remove('show'); }
+        function openBMI() { document.getElementById('bmi-modal').classList.add('open'); document.getElementById('main-menu').classList.remove('show'); }
+        function openPower() { document.getElementById('power-modal').classList.add('open'); document.getElementById('main-menu').classList.remove('show'); }
+        function openAgeCalc() { document.getElementById('age-modal').classList.add('open'); document.getElementById('main-menu').classList.remove('show'); }
+
+        function addToHistory(expression, result) { if (result === 'Error') return; calcHistory.unshift({ exp: expression, res: result }); if (calcHistory.length > 10) calcHistory.pop(); }
+        function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => showToast('کپی شد!')).catch(() => showToast('کپی شد (Fallback)')); }
+        function showToast(msg) { const toast = document.getElementById('toast'); toast.innerText = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2000); }
+        function renderHistoryList() { const list = document.getElementById('history-list'); if (calcHistory.length === 0) { list.innerHTML = '<div class="text-center text-gray-500 py-4">هنوز محاسبه‌ای انجام نشده</div>'; return; } let html = ''; calcHistory.forEach(item => { html += `<div class="glass-panel p-3 rounded-xl mb-2 flex flex-col items-end border-white/40 cursor-pointer hover:bg-white/20 transition-colors" onclick="copyToClipboard('${item.res}')"><span class="text-xs text-gray-500 font-mono dark:text-gray-400">${item.exp}</span><span class="text-lg font-bold text-gray-800 font-mono dark:text-white">= ${item.res}</span></div>`; }); list.innerHTML = html; }
+        function clearHistory() { calcHistory = []; renderHistoryList(); }
+
+        // --- BASIC CALCULATOR RENDER (UPDATED FOR GLOW) ---
+        function renderBasic() {
+            const container = document.getElementById('app-content');
+            // Note: Added 'glow-grid' class to the button container
+            container.innerHTML = `
+                <div class="flex flex-col h-full justify-end">
+                    <div class="glass-panel rounded-[2rem] p-5 mb-5 text-right flex flex-col justify-center min-h-[5rem] shadow-inner bg-black/5 dark:bg-black/20">
+                        <span class="text-3xl sm:text-4xl font-mono font-semibold text-gray-800 dark:text-gray-100 break-all tracking-tight" id="calc-display">${displayVal}</span>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-2.5 sm:gap-3 glow-grid">
+                        <button onclick="inputParen('(')" class="btn-bubble btn-func h-14 sm:h-16 w-full rounded-full font-semibold flex items-center justify-center text-lg">(</button>
+                        <button onclick="inputParen(')')" class="btn-bubble btn-func h-14 sm:h-16 w-full rounded-full font-semibold flex items-center justify-center text-lg">)</button>
+                        <button onclick="handlePercent()" class="btn-bubble btn-func h-14 sm:h-16 w-full rounded-full font-semibold flex items-center justify-center text-lg">%</button>
+                        <button onclick="handleSqrt()" class="btn-bubble btn-func h-14 sm:h-16 w-full rounded-full font-semibold flex items-center justify-center text-lg">√</button>
+
+                        <button onclick="handleClear()" class="btn-bubble btn-ac h-14 sm:h-16 w-full rounded-full font-semibold text-lg flex items-center justify-center">AC</button>
+                        <button onclick="handleOp('/')" class="btn-bubble btn-op h-14 sm:h-16 w-full rounded-full font-semibold text-xl flex items-center justify-center">÷</button>
+                        <button onclick="handleOp('*')" class="btn-bubble btn-op h-14 sm:h-16 w-full rounded-full font-semibold text-xl flex items-center justify-center">×</button>
+                        <button onclick="handleOp('-')" class="btn-bubble btn-op h-14 sm:h-16 w-full rounded-full font-semibold text-xl flex items-center justify-center">-</button>
+
+                        <button onclick="inputDigit(7)" class="btn-bubble h-14 sm:h-16 w-full rounded-full font-medium text-2xl flex items-center justify-center">7</button>
+                        <button onclick="inputDigit(8)" class="btn-bubble h-14 sm:h-16 w-full rounded-full font-medium text-2xl flex items-center justify-center">8</button>
+                        <button onclick="inputDigit(9)" class="btn-bubble h-14 sm:h-16 w-full rounded-full font-medium text-2xl flex items-center justify-center">9</button>
+                        <button onclick="handleOp('+')" class="btn-bubble btn-op h-14 sm:h-16 w-full rounded-full font-semibold text-xl flex items-center justify-center">+</button>
+
+                        <button onclick="inputDigit(4)" class="btn-bubble h-14 sm:h-16 w-full rounded-full font-medium text-2xl flex items-center justify-center">4</button>
+                        <button onclick="inputDigit(5)" class="btn-bubble h-14 sm:h-16 w-full rounded-full font-medium text-2xl flex items-center justify-center">5</button>
+                        <button onclick="inputDigit(6)" class="btn-bubble h-14 sm:h-16 w-full rounded-full font-medium text-2xl flex items-center justify-center">6</button>
+                        <button onclick="handleEqual()" class="btn-bubble btn-eq rounded-[2rem] font-semibold text-3xl row-span-2 flex items-center justify-center">=</button>
+
+                        <button onclick="inputDigit(1)" class="btn-bubble h-14 sm:h-16 w-full rounded-full font-medium text-2xl flex items-center justify-center">1</button>
+                        <button onclick="inputDigit(2)" class="btn-bubble h-14 sm:h-16 w-full rounded-full font-medium text-2xl flex items-center justify-center">2</button>
+                        <button onclick="inputDigit(3)" class="btn-bubble h-14 sm:h-16 w-full rounded-full font-medium text-2xl flex items-center justify-center">3</button>
+
+                        <button onclick="inputDigit(0)" class="btn-bubble w-full col-span-2 rounded-full font-medium text-2xl flex items-center justify-center h-14 sm:h-16">0</button>
+                        <button onclick="inputDot()" class="btn-bubble h-14 sm:h-16 w-full rounded-full font-semibold text-2xl flex items-center justify-center">.</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- MATH FUNCTIONS ---
+        function updateDisplay() { document.getElementById('calc-display').innerText = displayVal; }
+        function inputDigit(digit) { displayVal = (displayVal === '0' || displayVal === 'Error') ? String(digit) : displayVal + digit; updateDisplay(); }
+        function inputDot() { if (displayVal.slice(-1) !== '.') { displayVal += '.'; updateDisplay(); } }
+        function inputParen(paren) { displayVal = (displayVal === '0' || displayVal === 'Error') && paren === '(' ? '(' : displayVal + paren; updateDisplay(); }
+        function handleOp(op) { if(displayVal === 'Error') displayVal = '0'; const last = displayVal.slice(-1); if(['+','-','*','/'].includes(last)) displayVal = displayVal.slice(0,-1)+op; else displayVal+=op; updateDisplay(); }
+        function handleClear() { displayVal = '0'; updateDisplay(); }
+        function handleSqrt() { try { const v=eval(displayVal); displayVal=(v<0)?'Error':String(parseFloat(Math.sqrt(v).toFixed(8))); if(displayVal!=='Error') addToHistory(`√`, displayVal); } catch{displayVal='Error'} updateDisplay(); }
+        function handlePercent() { try { const v=eval(displayVal); displayVal=String(parseFloat((v/100).toFixed(8))); addToHistory('%', displayVal); } catch{displayVal='Error'} updateDisplay(); }
+        function handleEqual() { if(displayVal==='1391'){ showToast('🎉 Easter Egg!'); displayVal='0'; updateDisplay(); return;} try { const r=new Function('return '+displayVal)(); displayVal=(!isFinite(r)||isNaN(r))?'Error':String(parseFloat(r.toFixed(8))); if(displayVal!=='Error') addToHistory('=', displayVal); } catch{displayVal='Error'} updateDisplay(); }
+
+        // --- TABS LOGIC ---
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.nav-pill').forEach(btn => { btn.classList.remove('active'); if(btn.id === `tab-${tab}`) btn.classList.add('active'); });
+            const content = document.getElementById('app-content');
+            content.style.opacity = '0';
+            setTimeout(() => {
+                content.innerHTML = '';
+                if(tab === 'basic') { displayVal = '0'; renderBasic(); }
+                else if(tab === 'fraction') renderFraction();
+                else if(tab === 'equation') renderEquation();
+                else if(tab === 'number') renderNumber(); 
+                else if(tab === 'polygon') renderPolygon(); 
+                else if(tab === 'sieve') renderSieve();
+                content.style.opacity = '1';
+            }, 200);
+        }
+
+        // --- UTILS ---
+        function gcd(a, b) { return b == 0 ? a : gcd(b, a % b); }
+        const unitData = { length: [{v:'m',f:1,t:'متر'},{v:'cm',f:0.01,t:'سانتی'}], mass: [{v:'kg',f:1000,t:'کیلو'},{v:'g',f:1,t:'گرم'}], temp: [{v:'c',t:'C'},{v:'f',t:'F'}] }; // Simplified for space
+        function updateConvOptions() { /* Basic impl kept short */ 
+            const type = document.getElementById('conv-type').value; 
+            const s1=document.getElementById('conv-from'), s2=document.getElementById('conv-to'); s1.innerHTML=''; s2.innerHTML='';
+            if(type=='temp'){s1.innerHTML='<option value="c">C</option><option value="f">F</option>'; s2.innerHTML='<option value="c">C</option><option value="f">F</option>'; s2.selectedIndex=1;}
+            else{ const opts = type=='length' ? [{v:'m',t:'متر'},{v:'cm',t:'سانتی'},{v:'km',t:'کیلومتر'}] : [{v:'kg',t:'کیلوگرم'},{v:'g',t:'گرم'}]; 
+            opts.forEach(o=>{s1.add(new Option(o.t,o.v)); s2.add(new Option(o.t,o.v));}); s2.selectedIndex=1;} convertUnits();
+        }
+        function convertUnits() {
+            const val=parseFloat(document.getElementById('conv-input').value), t=document.getElementById('conv-type').value, f=document.getElementById('conv-from').value, to=document.getElementById('conv-to').value;
+            if(isNaN(val)) {document.getElementById('conv-result').innerText='0'; return;}
+            let res=val; 
+            if(t=='temp'){ if(f=='c'&&to=='f') res=val*1.8+32; else if(f=='f'&&to=='c') res=(val-32)/1.8; }
+            else { 
+                const fct = (u) => (t=='length'?(u=='m'?1:u=='cm'?0.01:1000):(u=='g'?1:1000)); 
+                res = val * fct(f) / fct(to); 
+            }
+            document.getElementById('conv-result').innerText=parseFloat(res.toFixed(4));
+        }
+
+        // --- Other Calculators Impl (Condensed for brevity, logic unchanged) ---
+        let currMode = 'usd-to-irr';
+        function setCurrMode(m){currMode=m; document.getElementById('btn-usd-irr').className=m==='usd-to-irr'?"flex-1 py-2 rounded-full text-xs font-semibold bg-white/50 text-gray-900 shadow-sm":"flex-1 py-2 rounded-full text-xs font-semibold text-gray-600 dark:text-gray-300"; document.getElementById('btn-irr-usd').className=m!=='usd-to-irr'?"flex-1 py-2 rounded-full text-xs font-semibold bg-white/50 text-gray-900 shadow-sm":"flex-1 py-2 rounded-full text-xs font-semibold text-gray-600 dark:text-gray-300"; calcCurrency();}
+        function calcCurrency(){const a=parseFloat(document.getElementById('curr-input').value), r=parseFloat(document.getElementById('curr-rate').value); if(isNaN(a)||isNaN(r))return; document.getElementById('curr-result').innerText = currMode==='usd-to-irr' ? (a*r).toLocaleString() : (a/r).toFixed(2);}
+        function calcDiscount(){const p=parseFloat(document.getElementById('disc-price').value), d=parseFloat(document.getElementById('disc-percent').value); if(isNaN(p)||isNaN(d))return; document.getElementById('disc-result').innerHTML=`<div>${(p-(p*d/100)).toLocaleString()}</div>`;}
+        function calcBMI(){const h=parseFloat(document.getElementById('bmi-height').value)/100, w=parseFloat(document.getElementById('bmi-weight').value); if(isNaN(h)||isNaN(w))return; document.getElementById('bmi-result').innerText=(w/(h*h)).toFixed(1);}
+        function calcPower(){const b=parseFloat(document.getElementById('pow-base').value), e=parseFloat(document.getElementById('pow-exp').value); if(!isNaN(b)&&!isNaN(e)) document.getElementById('pow-result').innerText=Math.pow(b,e);}
+        function calcAge(){const d=new Date(document.getElementById('age-input').value); if(!d)return; const diff=new Date()-d; document.getElementById('age-result').innerText=Math.floor(diff/(1000*60*60*24*365.25))+' سال';}
+
+        function renderFraction() {
+            document.getElementById('app-content').innerHTML = `
+                <div class="flex flex-col gap-6 items-center pt-4">
+                    <div class="glass-panel w-full rounded-[2.5rem] p-6 flex flex-col items-center gap-4">
+                        <div class="flex items-center justify-center gap-3 w-full" dir="ltr">
+                            <div class="flex flex-col w-20"><input id="n1" class="glass-input h-10 rounded-xl text-center" placeholder="a"><div class="h-px bg-gray-400 my-1"></div><input id="d1" class="glass-input h-10 rounded-xl text-center" placeholder="b"></div>
+                            <select id="frac-op" class="bg-white/30 rounded-full w-10 h-10 text-center"><option>+</option><option>-</option><option>*</option><option>/</option></select>
+                            <div class="flex flex-col w-20"><input id="n2" class="glass-input h-10 rounded-xl text-center" placeholder="c"><div class="h-px bg-gray-400 my-1"></div><input id="d2" class="glass-input h-10 rounded-xl text-center" placeholder="d"></div>
+                        </div>
+                        <button onclick="calcFraction()" class="btn-bubble btn-eq w-full h-12 rounded-full mt-2">محاسبه</button>
+                    </div>
+                    <div id="frac-result" class="glass-panel w-full min-h-[6rem] rounded-[2rem] flex items-center justify-center p-4 dark:text-white font-mono font-bold text-xl">---</div>
+                </div>`;
+        }
+        function calcFraction() {
+            const n1=parseFloat(document.getElementById('n1').value), d1=parseFloat(document.getElementById('d1').value), n2=parseFloat(document.getElementById('n2').value), d2=parseFloat(document.getElementById('d2').value), op=document.getElementById('frac-op').value;
+            if(isNaN(n1)||isNaN(d1)||isNaN(n2)||isNaN(d2)||d1===0||d2===0) {document.getElementById('frac-result').innerText='خطا'; return;}
+            let n,d; if(op=='+'){n=n1*d2+n2*d1;d=d1*d2;} else if(op=='-'){n=n1*d2-n2*d1;d=d1*d2;} else if(op=='*'){n=n1*n2;d=d1*d2;} else {n=n1*d2;d=d1*n2;}
+            const c=gcd(Math.abs(n),Math.abs(d)); document.getElementById('frac-result').innerText = `${n/c} / ${d/c}`;
+        }
+
+        function renderEquation() {
+            document.getElementById('app-content').innerHTML = `
+                <div class="flex flex-col gap-4 pt-2">
+                    <div class="glass-panel p-1.5 rounded-full flex gap-1"><button onclick="setEqMode('lin')" id="btn-lin" class="flex-1 py-1 rounded-full text-xs bg-white/50">خطی</button><button onclick="setEqMode('frac')" id="btn-frac" class="flex-1 py-1 rounded-full text-xs text-gray-500">کسری</button></div>
+                    <div id="eq-inputs" class="glass-panel rounded-[2rem] p-4 flex flex-col gap-2 items-center"></div>
+                    <button onclick="solveEq()" class="btn-bubble btn-eq w-full h-12 rounded-full">حل</button>
+                    <div id="eq-result" class="glass-panel min-h-[4rem] rounded-[2rem] flex items-center justify-center p-4 font-bold dark:text-white">---</div>
+                </div>`;
+            setEqMode('lin');
+        }
+        let eqMode='lin';
+        function setEqMode(m){eqMode=m; document.getElementById('eq-inputs').innerHTML = m==='lin' ? `<div class="flex gap-2" dir="ltr"><input id="lin-a" class="glass-input w-12 text-center" placeholder="a">x + <input id="lin-b" class="glass-input w-12 text-center" placeholder="b"> = <input id="lin-c" class="glass-input w-12 text-center" placeholder="c"></div>` : `<div class="text-sm">فرمت کسری (به زودی)</div>`;}
+        function solveEq(){ 
+            if(eqMode==='lin'){ 
+                const a=parseFloat(document.getElementById('lin-a').value), b=parseFloat(document.getElementById('lin-b').value), c=parseFloat(document.getElementById('lin-c').value); 
+                if(!isNaN(a)&&!isNaN(b)&&!isNaN(c)&&a!==0) document.getElementById('eq-result').innerText = `x = ${((c-b)/a).toFixed(4)}`; 
+            }
+        }
+
+        function renderNumber() {
+            document.getElementById('app-content').innerHTML = `
+                <div class="flex flex-col gap-4 pt-4 items-center">
+                    <input id="num-input" type="number" class="glass-input w-full h-14 text-2xl text-center rounded-2xl" placeholder="عدد">
+                    <button onclick="checkPrime()" class="btn-bubble btn-eq h-12 w-full rounded-full">بررسی</button>
+                    <div id="num-result" class="glass-panel w-full p-4 rounded-[2rem] text-center dark:text-white">---</div>
+                </div>`;
+        }
+        function checkPrime() {
+            const n=parseInt(document.getElementById('num-input').value); if(isNaN(n))return;
+            let divs=[]; for(let i=1;i<=n;i++)if(n%i==0)divs.push(i);
+            const isPrime = divs.length===2;
+            document.getElementById('num-result').innerHTML = `<div class="text-xl font-bold ${isPrime?'text-green-600':'text-blue-600'}">${isPrime?'اول است':'مرکب است'}</div><div class="text-sm mt-2 opacity-80">${divs.join(', ')}</div>`;
+        }
+
+        function renderPolygon() {
+            document.getElementById('app-content').innerHTML=`<div class="flex flex-col gap-4 pt-4"><input id="poly-n" type="number" class="glass-input h-14 text-center rounded-2xl" placeholder="تعداد اضلاع"><button onclick="calcPoly()" class="btn-bubble btn-eq h-12 rounded-full">محاسبه</button><div id="poly-res" class="glass-panel p-4 rounded-[2rem] text-center dark:text-white">---</div></div>`;
+        }
+        function calcPoly(){const n=parseInt(document.getElementById('poly-n').value); if(isNaN(n)||n<3)return; document.getElementById('poly-res').innerHTML=`مجموع زوایا: ${(n-2)*180}<br>هر زاویه: ${((n-2)*180/n).toFixed(2)}`;}
+
+        function renderSieve() {
+            document.getElementById('app-content').innerHTML=`<div class="flex flex-col gap-4 pt-4"><div class="flex gap-2"><input id="s-start" class="glass-input w-full h-12 text-center rounded-xl" placeholder="از"><input id="s-end" class="glass-input w-full h-12 text-center rounded-xl" placeholder="تا"></div><button onclick="runSieve()" class="btn-bubble btn-eq h-12 rounded-full">غربال</button><div id="sieve-res" class="glass-panel p-4 rounded-[2rem] dark:text-white break-words text-xs">---</div></div>`;
+        }
+        function runSieve(){
+            const s=parseInt(document.getElementById('s-start').value), e=parseInt(document.getElementById('s-end').value); if(isNaN(s)||isNaN(e))return;
+            let primes=[]; for(let i=Math.max(2,s); i<=e; i++){ let p=true; for(let j=2; j*j<=i; j++) if(i%j===0){p=false; break;} if(p) primes.push(i); }
+            document.getElementById('sieve-res').innerText = primes.join(', ');
+        }
+    </script>
+</body>
+</html>
